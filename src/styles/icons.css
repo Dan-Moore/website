@@ -1,0 +1,29 @@
+/* Icon mouse over events */
+
+.gear-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* Absolute position the fill icon directly on top of the regular one */
+.gear-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.gear-default {
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* On hover: hide regular, show fill */
+.gear-container:hover .gear-default {
+    opacity: 0;
+}
+
+.gear-container:hover .gear-fill {
+    opacity: 1;
+}

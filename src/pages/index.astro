@@ -1,17 +1,32 @@
 ---
-
+import BaseHead from "../components/BaseHead.astro";
+import GearIcon from "../components/GearIcon.astro";
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+    <head>
+        <BaseHead title={"SITE_TITLE"} description={"SITE_DESCRIPTION"} />
+    </head>
+    <body>
+        <h1>Astro</h1>
+        <p>Todo</p>
+        <button data-theme-btn="light">Light</button>
+        <button data-theme-btn="dark">Dark</button>
+        <button data-theme-btn="solarized">Solarized</button>
+        <br />
+        <div class="font-controls">
+            <button id="decrease-font" aria-label="Decrease font size"
+                >A-</button
+            >
+            <button id="reset-font" aria-label="Reset font size">Reset</button>
+            <button id="increase-font" aria-label="Increase font size"
+                >A+</button
+            >
+        </div>
+
+        <GearIcon />
+
+        <script src="../scripts/theme-manager.js"></script>
+        <script src="../scripts/font-manager.js"></script>
+    </body>
 </html>

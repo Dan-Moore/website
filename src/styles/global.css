@@ -1,0 +1,35 @@
+@import "icons.css";
+
+:root {
+    /* 1.0 represents 100% of the user's default browser font size (usually 16px) */
+    --font-scale: 1;
+
+    /* Modern fluid typography approach */
+    --base-size: calc(1rem * var(--font-scale));
+}
+
+body {
+    /* Apply the theme variables */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+    /* clamp(minimum, preferred, maximum) ensures accessibility boundaries */
+    font-size: clamp(0.875rem, var(--base-size), 2rem);
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--text-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+h1 {
+    /* Scale headings proportionally based on the base size */
+    font-size: calc(var(--base-size) * 2);
+}

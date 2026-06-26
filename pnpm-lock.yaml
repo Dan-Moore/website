@@ -11,6 +11,10 @@ importers:
       astro:
         specifier: ^7.0.3
         version: 7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+    devDependencies:
+      vite:
+        specifier: ^8.1.0
+        version: 8.1.0(esbuild@0.28.1)
 
 packages:
 
