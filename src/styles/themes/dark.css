@@ -1,7 +1,7 @@
 :root {
-    --dark-bg: #121212;
-    --dark-text: #f5f5f5;
-    --dark-alt-bg: #434343;
+    --dark-bg: #0f0f0f;
+    --dark-text: #e3e3e3;
+    --dark-alt-bg: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
