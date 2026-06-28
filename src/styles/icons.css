@@ -6,7 +6,9 @@
     cursor: pointer;
 }
 
-/* Absolute position the fill icon directly on top of the regular one */
+.gear-default {
+    transition: opacity 0.15s ease-in-out;
+}
 .gear-fill {
     position: absolute;
     top: 0;
@@ -15,15 +17,10 @@
     transition: opacity 0.15s ease-in-out;
 }
 
-.gear-default {
-    transition: opacity 0.15s ease-in-out;
-}
-
-/* On hover: hide regular, show fill */
+/* On hover: hide default icon, show fill icon */
 .gear-container:hover .gear-default {
     opacity: 0;
 }
-
 .gear-container:hover .gear-fill {
     opacity: 1;
 }
