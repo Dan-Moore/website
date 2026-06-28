@@ -76,8 +76,26 @@ export default defineConfig({
         ],
       },
     },
-    // Font: Atkinson
     // Font: Inter
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      options: {
+        variants: [
+          {
+            src: ["./src/assets/fonts/Inter/inter-cyrillic-500-normal.woff2"],
+            weight: "normal",
+            style: "normal",
+          },
+          {
+            src: ["./src/assets/fonts/Inter/inter-cyrillic-500-italic.woff2"],
+            weight: "normal",
+            style: "italic",
+          },
+        ],
+      },
+    },
     // Font: IBM Plex-Mono
     {
       provider: fontProviders.local(),
@@ -103,5 +121,48 @@ export default defineConfig({
       },
     },
     // Font: Geist Mono
+    {
+      provider: fontProviders.local(),
+      name: "Geist Mono",
+      cssVariable: "--font-geist-mono",
+      options: {
+        variants: [
+          {
+            src: [
+              "./src/assets/fonts/Geist Mono/geist-mono-cyrillic-500-normal.woff2",
+            ],
+            weight: "normal",
+            style: "normal",
+          },
+          {
+            src: [
+              "./src/assets/fonts/Geist Mono/geist-mono-cyrillic-500-italic.woff2",
+            ],
+            weight: "normal",
+            style: "italic",
+          },
+        ],
+      },
+    },
+    //Iosevka
+    {
+      provider: fontProviders.local(),
+      name: "Iosevka",
+      cssVariable: "--font-iosevka",
+      options: {
+        variants: [
+          {
+            src: ["./src/assets/fonts/Iosevka/iosevka-latin-500-normal.woff2"],
+            weight: "normal",
+            style: "normal",
+          },
+          {
+            src: ["./src/assets/fonts/Iosevka/iosevka-latin-500-italic.woff2"],
+            weight: "normal",
+            style: "italic",
+          },
+        ],
+      },
+    },
   ],
 });

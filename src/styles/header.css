@@ -19,6 +19,7 @@
 }
 
 .menu {
+    background-color: var(--alt-bg-color);
     position: fixed;
     top: 0;
     right: 0;
@@ -36,8 +37,6 @@
 
 main {
     flex-grow: 1;
-    padding: 20px;
-    padding-top: 80px;
     transition: margin-right var(--transition-speed) ease-in-out;
 }
 
@@ -59,6 +58,7 @@ body:has(.menu.open) main {
     padding: 15px;
     display: block;
     text-align: center;
+    color: inherit;
 }
 
 .header li {

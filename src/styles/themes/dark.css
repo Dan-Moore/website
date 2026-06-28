@@ -1,21 +1,17 @@
 :root {
     --dark-bg: #121212;
     --dark-text: #f5f5f5;
-
-    /* Optional: Define light mode defaults here too */
-    --bg-color: #ffffff;
-    --text-color: #333333;
+    --dark-alt-bg: #434343;
 }
 
-/* 2. Apply the dark colors based on system preference */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-color: var(--dark-bg);
         --text-color: var(--dark-text);
+        --alt-bg-color: var(--dark-alt-bg);
     }
 }
 
-/* 3. Apply the exact same dark colors based on the data attribute */
 [data-theme="dark"] {
     --bg-color: var(--dark-bg);
     --text-color: var(--dark-text);
