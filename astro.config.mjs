@@ -1,5 +1,6 @@
 import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 
 const { PORT } = loadEnv(
   process.env.NODE_ENV || "development",
@@ -8,8 +9,20 @@ const { PORT } = loadEnv(
 );
 
 export default defineConfig({
+  output: "static",
   server: {
     port: PORT ? parseInt(PORT) : 5173, // Default port for vite.
+  },
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+    },
   },
   fonts: [
     // Font: Atkinson
@@ -158,6 +171,26 @@ export default defineConfig({
           },
           {
             src: ["./src/assets/fonts/Iosevka/iosevka-latin-500-italic.woff2"],
+            weight: "normal",
+            style: "italic",
+          },
+        ],
+      },
+    },
+    // Font: Roboto
+    {
+      provider: fontProviders.local(),
+      name: "Roboto",
+      cssVariable: "--font-roboto",
+      options: {
+        variants: [
+          {
+            src: ["./src/assets/fonts/Roboto/roboto-cyrillic-500-normal.woff2"],
+            weight: "normal",
+            style: "normal",
+          },
+          {
+            src: ["./src/assets/fonts/Roboto/roboto-cyrillic-500-italic.woff2"],
             weight: "normal",
             style: "italic",
           },

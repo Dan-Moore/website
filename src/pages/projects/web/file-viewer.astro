@@ -1,0 +1,70 @@
+---
+import Layout from "@/layouts/DefaultLayout.astro";
+---
+
+<Layout title="Dan Moore">
+    <input type="file" id="fileInput" />
+    <pre id="output" style="font-family: monospace; white-space: pre;"></pre>
+    <script>
+        function generateHexDump(arrayBuffer, bytesPerLine = 16) {
+            const view = new DataView(arrayBuffer);
+            let result = "";
+
+            for (let i = 0; i < view.byteLength; i += bytesPerLine) {
+                // 1. Build the memory address offset (e.g., 00000000:)
+                const offset = i.toString(16).padStart(8, "0");
+
+                // 2. Gather the hex values and ASCII representations
+                const hexParts = [];
+                const asciiParts = [];
+
+                for (let j = 0; j < bytesPerLine; j++) {
+                    if (i + j < view.byteLength) {
+                        const byte = view.getUint8(i + j);
+
+                        // Convert byte to 2-digit hex
+                        hexParts.push(byte.toString(16).padStart(2, "0"));
+
+                        // Convert byte to readable ASCII (or a dot if control/non-printable character)
+                        asciiParts.push(
+                            byte >= 32 && byte <= 126
+                                ? String.fromCharCode(byte)
+                                : ".",
+                        );
+                    } else {
+                        // Pad for lines that don't reach the full bytesPerLine length
+                        hexParts.push("  ");
+                        asciiParts.push(" ");
+                    }
+                }
+
+                // 3. Format the line (group hex bytes into pairs for readability)
+                const joinedHex = hexParts
+                    .reduce((acc, curr, index) => {
+                        return acc + curr + (index % 2 === 1 ? " " : "");
+                    }, "")
+                    .trimEnd();
+
+                const joinedAscii = asciiParts.join("");
+
+                result += `${offset}:  ${joinedHex.padEnd(bytesPerLine * 2.5, " ")}  |${joinedAscii}|\n`;
+            }
+
+            return result;
+        }
+
+        document
+            .getElementById("fileInput")
+            .addEventListener("change", async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Read the file natively as an ArrayBuffer
+                const arrayBuffer = await file.arrayBuffer();
+
+                // Generate and display the dump
+                const dump = generateHexDump(arrayBuffer);
+                document.getElementById("output").textContent = dump;
+            });
+    </script>
+</Layout>

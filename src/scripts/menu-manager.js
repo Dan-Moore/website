@@ -1,60 +1,83 @@
 const root = document.documentElement;
 
-// Menu Button Event Listeners
-const toggleMenuBtn = document.querySelector(".menu-toggle");
-toggleMenuBtn.addEventListener("click", () => {
-  toggleMenuBtn.setAttribute(
-    "aria-expanded",
-    document.querySelector(".menu").classList.toggle("open"),
-  );
+// Theme Selection
+// ------------------------------------------------------------------------------------------
+const themeSelector = document.getElementById("theme-selector");
+(() => {
+  // Inits page with theme saved in local storage and pre-selects dropdown menu.
+  const theme = localStorage.getItem("theme");
+  if (theme !== null) {
+    themeSelector.value = theme;
+    root.setAttribute("data-theme", theme);
+  }
+})();
+
+document.addEventListener("DOMContentLoaded", () => {
+  themeSelector.addEventListener("change", (event) => {
+    const selectedTheme = event.target.value;
+    root.setAttribute("data-theme", selectedTheme);
+    localStorage.setItem("theme", selectedTheme);
+  });
 });
 
-// Theme Selection
-const setTheme = (themeName) => {
-  console.log(`Setting theme to '${themeName}'`);
-  root.setAttribute("data-theme", themeName);
-  localStorage.setItem("theme", themeName);
-};
-
-document
-  .getElementById("theme-selection")
-  .addEventListener("change", (event) => {
-    setTheme(event.target.value);
-  });
-// Forces dropdown value for theme selection on page load.
-if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-  setTheme("light");
-  document.getElementById("theme-selection").value = "light";
-} else {
-  setTheme("dark");
-  document.getElementById("theme-selection").value = "dark";
+// Font Family Selection
+// ------------------------------------------------------------------------------------------
+const fontFamilySelector = document.getElementById("font-family-selector");
+function setFontFamily(fontFamily) {
+  fontFamilySelector.value = fontFamily;
+  root.style.setProperty("font-family", `var(--font-${fontFamily})`);
+  localStorage.setItem("font-family", fontFamily);
 }
 
-// Font Family Selection
-const setFontFamily = (family) => {
-  root.style.setProperty("font-family", `--font-${family}`);
-};
-document
-  .getElementById("font-selection")
-  .addEventListener("change", (event) => {
-    setFontFamily(event.target.value);
-  });
+(() => {
+  // Inits page with font-family saved in local storage and pre-selects dropdown menu.
+  const fontFamily = localStorage.getItem("font-family");
+  if (fontFamily !== null) {
+    setFontFamily(fontFamily);
+  } else {
+    // Fallback to default, defined in html head.
+    const defaultFamily = document
+      .querySelector('meta[name="default-font-family"]')
+      .getAttribute("content");
+    setFontFamily(defaultFamily);
+  }
+})();
+
+fontFamilySelector.addEventListener("change", (event) => {
+  const fontFamily = event.target.value;
+  console.log(`Updating font family => ${fontFamily}`);
+  setFontFamily(fontFamily);
+});
 
 // Font Size
-document.getElementById("font-size-selection").value = "100";
-
-const getFontSize = () =>
-  parseFloat(getComputedStyle(root).getPropertyValue("--font-scale")) || 1.0;
-
-const setFontSize = (value) => {
+// ------------------------------------------------------------------------------------------
+const fontSizeSelector = document.getElementById("font-size-selector");
+function setFontSize(size) {
   const MIN_SCALE = 0.5; // Min Font Size: 50%
-  const MAX_SCALE = 2; // Max Font Size: 200%
+  const MAX_SCALE = 3; // Max Font Size: 300%
+  const value = Number(size) * 0.01; // Scale value; 200 *.01 = 2
   const scale = Math.min(Math.max(value, MIN_SCALE), MAX_SCALE);
   root.style.setProperty("--font-scale", scale);
-};
+  localStorage.setItem("font-size", size);
+  fontSizeSelector.value = size;
+}
 
-document
-  .getElementById("font-size-selection")
-  .addEventListener("change", (event) => {
-    setFontSize(Number(event.target.value) * 0.01); // Scale value; 200 *.01 = 2
-  });
+(() => {
+  // Inits page with font-size saved in local storage and pre-selects dropdown menu.
+  const fontSize = localStorage.getItem("font-size");
+  if (fontSize !== null) {
+    setFontSize(fontSize);
+  } else {
+    // Fallback to default, defined in html head.
+    const defaultSize = document
+      .querySelector('meta[name="default-font-size"]')
+      .getAttribute("content");
+    setFontSize(defaultSize);
+  }
+})();
+
+fontSizeSelector.addEventListener("change", (event) => {
+  const selectedSize = event.target.value;
+  console.log(`Updating font size => ${selectedSize}`);
+  setFontSize(selectedSize);
+});

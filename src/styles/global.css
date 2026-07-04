@@ -1,4 +1,7 @@
-@import "header.css";
+@import "tailwindcss";
+@plugin "daisyui" {
+    themes: all;
+}
 
 :root {
     --font-scale: 1;
@@ -6,49 +9,6 @@
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
-    /* clamp(
-        minimum: 0.875rem,
-        preferred: --base-size,
-        maximum: 2rem)
-    */
-    font-size: clamp(0.875rem, var(--base-size), 2rem);
+    font-size: clamp(0.5rem, var(--base-size), 3rem);
     line-height: 1.5;
-    font-family: var(--font-literata);
-}
-
-main {
-    padding-left: 15px;
-}
-
-button {
-    padding: 0.5rem 1rem;
-    border: none;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    cursor: pointer;
-}
-
-h1 {
-    font-size: calc(var(--base-size) * 2);
-}
-
-h2 {
-    font-size: calc(var(--base-size) * 1.75);
-}
-
-h3 {
-    font-size: calc(var(--base-size) * 1.5);
-}
-
-h4 {
-    font-size: calc(var(--base-size) * 1.25);
-}
-
-.margin-right {
-    margin-left: auto;
 }

@@ -1,10 +1,9 @@
 ---
 // CSS
-import "../styles/global.css";
-import.meta.glob("../styles/themes/*.css", { eager: true });
-
+import "@/styles/global.css";
 import type { ImageMetadata } from "astro";
 import { Font } from "astro:assets";
+import { Site } from "@/consts";
 
 interface Props {
     title: string;
@@ -23,6 +22,8 @@ const { title, description, image } = Astro.props;
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
+<meta name="default-font-family" content={Site.DEFAULT_FONT_FAMILY} />
+<meta name="default-font-size" content={Site.DEFAULT_FONT_SIZE} />
 
 <!-- Web Fonts -->
 <Font cssVariable="--font-atkinson" />
@@ -32,3 +33,4 @@ const { title, description, image } = Astro.props;
 <Font cssVariable="--font-iosevka" />
 <Font cssVariable="--font-ibm-plex-mono" />
 <Font cssVariable="--font-geist-mono" />
+<Font cssVariable="--font-roboto" />

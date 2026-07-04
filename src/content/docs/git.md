@@ -1,7 +1,8 @@
 ---
+uuid: '904af41e-48ba-44b9-b527-4eb39da965b1'
 title: 'First post'
 description: 'Lorem ipsum dolor sit amet'
-pubDate: 'Jul 08 2022'
+published: '7/3/26'
 ---
 
 ## Init
