@@ -22,8 +22,8 @@ const posts = defineCollection({
     }),
 });
 
-const docs = defineCollection({
-  loader: glob({ base: "./src/content/docs", pattern: "**/*.{md,mdx}" }),
+const guides = defineCollection({
+  loader: glob({ base: "./src/content/guides", pattern: "**/*.{md,mdx}" }),
   schema: ({}) =>
     z.object({
       title: z.string(),
@@ -33,4 +33,4 @@ const docs = defineCollection({
     }),
 });
 
-export const collections = { posts, docs };
+export const collections = { posts, guides };
