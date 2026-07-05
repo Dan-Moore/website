@@ -3,10 +3,15 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 const ContentSchema = z.object({
-  uuid: z.uuid(),
+  uuid: z.string().uuid(),
   draft: z.boolean().default(true),
   published: z.coerce.date().optional(),
   modified: z.coerce.date().optional(),
+});
+
+const guides = defineCollection({
+  loader: glob({ base: "./src/content/guides", pattern: "**/*.{md,mdx}" }),
+  schema: ({}) => ContentSchema,
 });
 
 const posts = defineCollection({
@@ -14,22 +19,18 @@ const posts = defineCollection({
   loader: glob({ base: "./src/content/posts", pattern: "**/*.{md,mdx}" }),
   // Type-check front-matter using a schema
   schema: ({}) =>
-    z.object({
+    ContentSchema.extend({
       title: z.string(),
       description: z.string(),
-      published: z.coerce.date(),
-      updatedDate: z.coerce.date().optional(),
-    }),
-});
-
-const guides = defineCollection({
-  loader: glob({ base: "./src/content/guides", pattern: "**/*.{md,mdx}" }),
-  schema: ({}) =>
-    z.object({
-      title: z.string(),
-      description: z.string(),
-      published: z.coerce.date(),
-      modified: z.coerce.date().optional(),
+    }).transform((data) => {
+      // If a published date exists, setting default draft value to false.
+      if (data.published) {
+        return {
+          ...data,
+          draft: false,
+        };
+      }
+      return data;
     }),
 });
 

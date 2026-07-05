@@ -13,6 +13,9 @@ export default defineConfig({
   server: {
     port: PORT ? parseInt(PORT) : 5173, // Default port for vite.
   },
+  redirects: {
+    "/posts": "/posts/1", // Sent to 1st pagination page.
+  },
   vite: {
     plugins: [tailwindcss()],
   },

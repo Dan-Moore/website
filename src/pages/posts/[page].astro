@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/DefaultLayout.astro";
+import { getCollection } from "astro:content";
+import { Site } from "@/consts";
+
+export async function getStaticPaths({ paginate }) {
+    const posts = await getCollection("posts");
+    return paginate(posts, { pageSize: Site.POST_PAGINATION_SIZE });
+}
+
+const { page } = Astro.props;
+---
+
+<Layout title="Dan's Blog">
+    <div class="overflow-x-auto">
+        <table class="table">
+            <tbody>
+                {
+                    page.data.map((post) => (
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div>
+                                        <a href={`/posts/${post.id}`}>
+                                            <div class="font-bold">
+                                                {post.data.title}
+                                            </div>
+                                            <div class="text-sm opacity-50">
+                                                {post.data.description}
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+        <div class="flex justify-between items-center px-2">
+            <div class="join">
+                <a
+                    href={page.url.prev || "#"}
+                    class={`join-item btn ${!page.url.prev ? "btn-disabled" : ""}`}
+                >
+                    «
+                </a>
+
+                <button class="join-item btn pointer-events-none">
+                    Page {page.currentPage} of {page.lastPage}
+                </button>
+
+                <a
+                    href={page.url.next || "#"}
+                    class={`join-item btn ${!page.url.next ? "btn-disabled" : ""}`}
+                >
+                    »
+                </a>
+            </div>
+        </div>
+    </div>
+</Layout>

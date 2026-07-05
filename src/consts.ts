@@ -59,4 +59,5 @@ export const Site = {
     "space-grotesk",
   ],
   DEFAULT_FONT_FAMILY: "literata",
+  POST_PAGINATION_SIZE: 10,
 } as const;
