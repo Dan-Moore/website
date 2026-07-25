@@ -3,11 +3,112 @@ title: Todo
 description: Todo
 ---
 
-## ObjectMapper
-todo
+```java
+class User {
+  String name;
+  Integer age;
+  public String getName() { return name; }
+  public void setName(String name) { this.name = name; }
+  public Integer getAge() { return age; }
+  public void setAge(Integer age) { this.age = age; }
+}
+```
+
 ## JSON
-todo
+```java
+ObjectMapper mapper = JsonMapper.builder().build();
+String json = "{\"name\":\"Bob\", \"age\":42}";
+
+User user = mapper.readValue(json, User.class);
+System.out.println(mapper.writeValueAsString(user));
+```
+
 ## XML
-todo
+```java
+ObjectMapper mapper = XmlMapper.builder().build();
+String xml = "<User><name>Alice</name><age>30</age></User>";
+
+User user = mapper.readValue(xml, User.class);
+System.out.println(mapper.writeValueAsString(user));
+```
+
 ## CSV
-todo
+```java
+CsvMapper mapper = CsvMapper.builder().build();
+CsvSchema schema = CsvSchema.emptySchema().withHeader();
+String csv = "name,age\nAlice,30\nBob,25";
+
+MappingIterator<User> iterator = mapper.readerFor(User.class)
+                .with(schema)
+                .readValues(csv);
+
+List<User> users = iterator.readAll();
+System.out.println(mapper.writeValueAsString(users));
+```
+
+## HTML
+```java
+String html = """
+<html>
+  <head><title>Hello World</title></head>
+  <body>
+    <h1 class="header">jsoup links</h1>
+    <div id="content">
+      <p>todo</p>
+      <a href="https://jsoup.org">jsoup</a>
+      <a href="https://jsoup.org/cookbook/">cookbook</a>
+    </div>
+  </body>
+</html>
+""";
+
+Document doc = Jsoup.parse(html);
+String title = doc.title();
+
+Elements links = doc.select("#content a");
+for (Element link : links) {
+  String label = link.text();
+  String url = link.attr("href");
+}
+```
+
+## PDF
+Working with PDFs can be a pain. Apache PDFBox is the go to default library for most. Example below can create a pdf file and then reads in the pdf.  
+Personally, unless you have a specific task like digitally sign a form, I would take a different approach.  The docling library can convert files into other formats, such as converting a PDF into HTML.  Instead of fighting with PDFBox you can use jsoup. 
+```java
+try (PDDocument document = new PDDocument()) {
+  PDPage page = new PDPage();
+  document.addPage(page);
+
+  PDType1Font fontBold = new PDType1Font(FontName.HELVETICA_BOLD);
+  PDType1Font fontRegular = new PDType1Font(FontName.HELVETICA);
+
+  try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {              
+    contentStream.beginText();
+    contentStream.newLineAtOffset(50, 700);
+                
+    contentStream.setFont(fontBold, 18);
+    contentStream.showText("User Report");
+    contentStream.newLineAtOffset(0, -30);
+                
+    contentStream.setFont(fontRegular, 12);
+    contentStream.showText("Name: Alice Smith");
+                
+    contentStream.newLineAtOffset(0, -20);
+    contentStream.showText("Age: 30");
+    contentStream.endText();
+  }
+  document.save("user.pdf");
+}
+
+try (PDDocument document = Loader.loadPDF(new File("user.pdf"))) {
+  PDFTextStripper stripper = new PDFTextStripper();
+            
+  String text = stripper.getText(document);
+  String[] lines = text.split("\\r?\\n");
+
+  for(String line : lines) {
+    System.out.println(line);
+  }
+}
+```
