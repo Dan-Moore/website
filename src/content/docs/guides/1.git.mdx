@@ -1,0 +1,88 @@
+---
+title: 'Git User Guide'
+description: 'User guide on git'
+---
+
+## Configuring Git
+Git has an internal user object, that will require a name and email address.
+```
+git config --global user.name "Your Name" \
+&& git config --global user.email "Your Email"
+```
+
+### SSH
+If you are working remote repository hosted on a site such as GitHub or GitLab, you can use SSH to push updates from your local machine.
+
+SSH works by creating public key with an encryption algorithm, normally it will be RSA or Ed25519.  After you create the key, upload your key into remote repository. See [GitHub's Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) on how to use attaching your SSH key to your GitHub account.
+
+```
+ssh-keygen -t ed25519 -C "Your Email" \
+&& cat ~/.ssh/id_ed25519.pub
+```
+
+## Working with Repositories
+Your can create new repository with the `git init` command.  In your project's root directory to initialize a new repo.  
+
+If you want to sync your local repository with an external source, use the `remote` command.
+```
+git remote add origin <remote url>
+```
+
+You can also use the `git clone <url>` command to create a repository from an existing repo, hosted on a remote source.
+
+### Checking Code
+The `git add <file>` can add to checking, and you can also use the `git add .` to the add all files from your working directory.  
+You can also create a `.gitignore` to prevent certain files from being checked in. Each line of the .gitignore file can be either a directory or a standalone file.
+
+```
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# env files
+.env
+.env.production
+```
+
+After your add files, you'll need to create a commit message.  You can replace the message with another commit with the --amend flage.
+```
+git commit -m "Hello World!"
+git commit --amend -m "New commit message."
+```
+
+If you have several commits that you want to bundle together, you can with the `rebase` command.  Running `git rebase -i HEAD~3` will open up an interactive menu letting you group together commits.
+
+In the iterative menu, replace `pick` with `squash`, expect for the first commit message.  The first head message needs to remain as pick.
+```
+pick 1a2b3c4 First commit message
+pick 5e6f7g8 Second commit message
+pick 9h0i1j2 Third commit message
+```
+
+To publish your changes onto a remote source use the `git push` command.
+```
+git push origin <branch-name>
+```
+
+Like wise, the `git pull` command will update with the latest changes from the remote source.
+
+## Working with Branches
+Branches are useful for when you want to work on a feature that's not ready ready to deployed on the main branch.  Use the `branch` command to make a new branch and `switch` to move your local workspace to the new branch.
+```
+git branch <branch-name> \
+&& git switch <branch-name>
+```
+
+You can also create branches from another branches with the `switch` command, just include the `-c` flag to indicate that new branch needs to be created.
+```
+git switch -c <new-branch> <base-branch>
+```
+
+## Further reading
+- [GitHub Docs](https://docs.github.com/en/get-started/git-basics/set-up-git), onboarding guide on configuring and using git. 
+- GitHub's [git cheat-sheet](https://training.github.com/downloads/github-git-cheat-sheet/) for command usage.

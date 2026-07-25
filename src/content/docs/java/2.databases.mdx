@@ -1,0 +1,354 @@
+---
+title: Working with Databases in Java
+description: A guide u
+---
+
+Reference pages are ideal for outlining how things work in terse and clear terms.
+Less concerned with telling a story or addressing a specific use case, they should give a comprehensive outline of what you're documenting.
+
+## Records Objects
+The [record](https://docs.oracle.com/en/java/javase/26/language/records.html) datatype added in Java 14.  A key difference between records and normal class objects, is that records are immutable objects.   Once a record object is created, it's internal values can never change.  Making them ideal for data entry and retrieval.  Validation annotations can also included to assert that proper values are used when initializing the record.
+
+Compared to classic java objects, when defining a record more streamlined.  You won't need to write a constructor, define any internal fields or getter methods.  This snippet `public record Foo(String bar, String baz){}`, will define an object with two publicly accessible string fields.
+
+For our examples, I'll be using this generic `User` record.
+```java
+public record User(@GreaterThanZero Integer id, String firstName, String lastName, @NotNull String email, Timestamp created, Timestamp modified, Timestamp removed) {
+  /** Column names used in the database table. */
+  public static final String COL_ID = "id";
+  public static final String COL_FIRST_NAME = "first_name";
+  public static final String COL_LAST_NAME = "last_name";
+  public static final String COL_EMAIL = "email";
+  public static final String COL_CREATED_DT = "created_dt";
+  public static final String COL_MODIFIED_DT = "modified_dt";
+  public static final String COL_REMOVED_DT = "removed_dt";
+
+  /** Added this helper method to reduce boilerplate. */
+  public static User mapRow(ResultSet rs) throws SQLException {
+    return new User(
+                rs.getInt(COL_ID),
+                rs.getString(COL_FIRST_NAME),
+                rs.getString(COL_LAST_NAME),
+                rs.getString(COL_EMAIL),
+                rs.getTimestamp(COL_CREATED_DT),
+                rs.getTimestamp(COL_MODIFIED_DT),
+                rs.getTimestamp(COL_REMOVED_DT)
+    );
+  }
+}
+```
+
+## JDBC CRUD Methods
+To run SQL queries on the database with the [JDBC API](https://docs.oracle.com/en/java/javase/26/docs/api/java.sql/java/sql/package-summary.html), uses the connection interface, along with a statement object.
+In the examples below, I'll be creating a connection to a Postgres database with help from the DriverManager.
+
+The PreparedStatement object can parameterize a SQL string, to help sanitize incoming arguments.  
+They alow a temporary '?' characters to be included in the query and will be replaced be executing the query.
+
+Once a query has been executed and the connection is no longer needed, you can terminate the connection with the `close()` method.
+```
+String db_url = "jdbc:mysql://localhost:5432/postgres";
+String db_user = "admin";
+String db_password = "password";
+String query = "INSERT INTO foo (id, message) VALUES (?, ?)";
+
+Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+PreparedStatement statement = connection.prepareStatement(query);
+statement.setInt(1, 10);                // Setting value into the first '?' instance.
+statement.setString(2, "Hello World!"); // Setting value into the second '?' instance.
+statement.executeUpdate();              // Running the query on the database.
+connection.close();                     // Closing the connection after use.
+```
+
+
+### Create Methods
+Running an insert method is done using the PreparedStatement's `executeUpdate()` method.  The method returns the row count of how many records where inserted.  For these examples I'm also throwing an `IllegalStateException` when there is an invalid row count.
+
+SQLExceptions can be raised if there is something wrong with the SQL query or if there is an issue with the connection.
+
+```java
+public void insert(UserRecord user) throws SQLException {
+     String query = String.format("INSERT INTO users (%s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?)",
+             User.COL_ID, User.COL_FIRST_NAME, User.COL_LAST_NAME, User.COL_EMAIL,
+             User.COL_CREATED_DT, User.COL_MODIFIED_DT, User.COL_REMOVED_DT);
+
+     Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+     PreparedStatement statement = connection.prepareStatement(query);
+     statement.setInt(1, user.id());
+     statement.setString(2, user.firstName());
+     statement.setString(3, user.lastName());
+     statement.setString(4, user.email());
+     statement.setTimestamp(5, user.created());
+     statement.setTimestamp(6, user.modified());
+     statement.setTimestamp(7, user.removed());
+
+     int rows = statement.executeUpdate();
+     connection.close();
+     
+     if(rows != 1) {
+         throw new IllegalStateException();
+     }
+     
+ }
+```
+
+Most databases also include way to either insert or update an existing record in a single query, often referred to as an `upsert`.  In my case, I'm using Postgres' `ON CONFLICT` keyword to accomplish this.
+```java
+public void upsert(UserRecord user) throws SQLException {
+        String query = String.format("INSERT INTO users (%s, %s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                        "ON CONFLICT (%s) " +
+                        "DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s, %s = EXCLUDED.%s, %s = EXCLUDED.%s, %s = EXCLUDED.%s, %s = EXCLUDED.%s",
+                // Insert Column Names
+                User.COL_ID, User.COL_FIRST_NAME, User.COL_LAST_NAME, User.COL_EMAIL,
+                User.COL_CREATED_DT, User.COL_MODIFIED_DT, User.COL_REMOVED_DT,
+                // On Conflict Field
+                User.COL_ID,
+                // Conflict Update Query
+                User.COL_FIRST_NAME, User.COL_FIRST_NAME,
+                User.COL_LAST_NAME, User.COL_LAST_NAME,
+                User.COL_EMAIL, User.COL_EMAIL,
+                User.COL_CREATED_DT, User.COL_CREATED_DT,
+                User.COL_MODIFIED_DT, User.COL_MODIFIED_DT,
+                User.COL_REMOVED_DT, User.COL_REMOVED_DT
+        );
+
+        Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, user.id());
+        statement.setString(2, user.firstName());
+        statement.setString(3, user.lastName());
+        statement.setString(4, user.email());
+        statement.setTimestamp(5, user.created());
+        statement.setTimestamp(6, user.modified());
+        statement.setTimestamp(7, user.removed());
+
+        int rows = statement.executeUpdate();
+        connection.close();
+        
+        if(rows != 1) {
+            throw new IllegalStateException();
+        }
+    }
+```
+
+### Read Methods
+When running select statements, you use the `executeQuery()` method.  It returns an iterable `ResultSet` object.
+You can use a simple while loop to build a collection of the returned records.
+```java
+public List<User> users() throws SQLException {
+  List<User> users = new ArrayList<>();
+  String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s FROM users",
+                User.COL_ID, User.COL_FIRST_NAME, User.COL_LAST_NAME, User.COL_EMAIL,
+                User.COL_CREATED_DT, User.COL_MODIFIED_DT, User.COL_REMOVED_DT);
+
+  Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+  PreparedStatement statement = connection.prepareStatement(query);
+  ResultSet resultSet = statement.executeQuery();
+
+  while(resultSet.next()) {
+    users.add(User.mapRow(resultSet));
+  }
+
+  connection.close();
+  return users;
+}
+```
+
+If you just want to return a single method, you can replace the while loop with an if statement.  
+To mix things up a bit, I've included the Optional keyword that was introduce in Java 8.
+They act like null guards, and require to use an getter method to retrieve value `User u = fetch(1).get();`.
+
+```java
+public Optional<UserRecord> fetch(Integer id) throws SQLException {
+  String query = String.format("SELECT %s, %s, %s, %s, %s, %s, %s FROM users WHERE %s = ?",
+                // Select clause values
+                User.COL_ID, User.COL_FIRST_NAME, User.COL_LAST_NAME, User.COL_EMAIL,
+                User.COL_CREATED_DT, User.COL_MODIFIED_DT, User.COL_REMOVED_DT,
+                // Where clause values
+                User.COL_ID, id);
+
+  Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+  PreparedStatement statement = conn.prepareStatement(query);
+  statement.setInt(1, id);
+  
+  ResultSet resultSet = statement.executeQuery();
+  connection.close();
+
+  if (resultSet.next()) {
+    return Optional.of(UserRecord.mapRow(resultSet));
+  }
+
+  return Optional.empty();
+}
+```
+
+### Update Method
+Not much is different between updates and inserts, they use the same `executeUpdate()` method.  Depending on your query, multiple rows can be updated but my example the WHERE clause uses the table's primary key and can only update a single record. 
+```java
+public void update(UserRecord user) throws SQLException {
+        String query = String.format("UPDATE users SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?",
+                // Columns names in SET clause 
+                User.COL_ID, User.COL_FIRST_NAME, User.COL_LAST_NAME, User.COL_EMAIL,
+                User.COL_CREATED_DT, User.COL_MODIFIED_DT, User.COL_REMOVED_DT
+                // Column in Where clause
+                User.COL_ID
+        );
+
+        Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, user.id());
+        statement.setString(2, user.firstName());
+        statement.setString(3, user.lastName());
+        statement.setString(4, user.email());
+        statement.setTimestamp(5, user.created());
+        statement.setTimestamp(6, user.modified());
+        statement.setTimestamp(7, user.removed());
+        statement.setInt(8, user.id());
+
+        
+        int rows = statement.executeUpdate();
+        connection.close();
+        
+        if(rows != 1) {
+            throw new IllegalStateException();
+        }
+    }
+```
+
+### Delete Method
+Delete queries also use the `executeUpdate()` method and are similar to update methods where they can delete multiple records.  
+```java
+public void delete(Integer id) throws SQLException {
+        String query = String.format("DELETE FROM users WHERE %s = ?", User.COL_ID);
+        Connection connection = DriverManager.getConnection(db_url, db_user, db_password);
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, id);
+        
+        int rows = statement.executeUpdate();
+        connection.close();
+        
+        if(rows != 1) {
+            throw new IllegalStateException();
+        }
+    }
+```
+
+## Object Relational Mapping (ORM)
+
+### Hibernate
+Hibernate is the classic ORM used in Java.  It can only use manage objects, meaning we have to use classic objects with setters & getters.
+Hibernate comes with a set of annotations, used to mapped the relationship between 
+```
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    private Integer id; 
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String firstName;
+    private String email;
+    @Column(name = "created_dt")
+    private Timestamp created;
+    @Column(name = "modified_dt")
+    private Timestamp modified;
+    @Column(name = "removed_dt")
+    private Timestamp removed;
+    
+    // Omitted getters & setters
+```
+
+Hibernate uses a repository pattern for running database queries.  A noticeable difference between a traditional JDBC, is that we no longer need to write SQL statements and the connection is now handle by a session object.
+
+```java
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import java.util.Optional;
+
+public class UserRepository {
+
+    private final SessionFactory sessionFactory;
+
+    public UserRepository(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+
+    public Optional<User> select(Integer id) {
+        try (Session session = sessionFactory.openSession()) {
+            User user = session.get(User.class, id);
+            return Optional.ofNullable(user);
+        }
+    }
+
+    public boolean insert(User user) {
+        Transaction transaction = null;
+        
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.persist(user); // Inserting the user.
+            transaction.commit();
+            return true;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Spring Data JPA
+JPA is modeled off Hibernate but with a few differences.  We now have an EntityManagerFactory, instead of SessionFactory.  
+
+```
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import java.util.Optional;
+
+public class UserRepository {
+
+    private final EntityManagerFactory entityManagerFactory;
+
+    public UserRepository(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
+    public Optional<User> select(Integer id) {
+        try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
+            User user = entityManager.find(User.class, id);
+            return Optional.ofNullable(user);
+        }
+    }
+
+
+    public boolean insert(User user) {
+        EntityTransaction transaction = null;
+        
+        try (EntityManager entityManager = entityManagerFactory.createEntityManager()) {
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(user);
+            
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+}
+```
+This UserRepository can also be reduce into an interface that extends a built-in CrudRepository, [see this example](https://github.com/spring-projects/spring-data-examples/blob/main/jpa/example/src/main/java/example/springdata/jpa/simple/SimpleUserRepository.java) on a use case.
+
+## Further reading
+- Baeldung's post on the [record keyword](https://www.baeldung.com/java-record-keyword).

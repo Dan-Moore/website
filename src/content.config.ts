@@ -1,6 +1,7 @@
-import { defineCollection } from "astro:content";
+import { defineCollection, z } from "astro:content";
+import { docsLoader } from "@astrojs/starlight/loaders";
+import { docsSchema } from "@astrojs/starlight/schema";
 import { glob } from "astro/loaders";
-import { z } from "astro/zod";
 
 const ContentSchema = z.object({
   uuid: z.string().uuid(),
@@ -9,16 +10,12 @@ const ContentSchema = z.object({
   modified: z.coerce.date().optional(),
 });
 
-const guides = defineCollection({
-  loader: glob({ base: "./src/content/guides", pattern: "**/*.{md,mdx}" }),
-  schema: ({}) => ContentSchema,
-});
-
+/* Posts Collection */
 const posts = defineCollection({
   // Load Markdown and MDX files in the `src/content/posts/` directory.
   loader: glob({ base: "./src/content/posts", pattern: "**/*.{md,mdx}" }),
   // Type-check front-matter using a schema
-  schema: ({}) =>
+  schema: () =>
     ContentSchema.extend({
       title: z.string(),
       description: z.string(),
@@ -34,4 +31,10 @@ const posts = defineCollection({
     }),
 });
 
-export const collections = { posts, guides };
+/* Starlight Document Collection */
+const docs = defineCollection({
+  loader: docsLoader(), // Omit this line if you are using Astro 4.x
+  schema: docsSchema(),
+});
+
+export const collections = { posts, docs };

@@ -2,6 +2,8 @@ import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 
+import starlight from "@astrojs/starlight";
+
 const { PORT } = loadEnv(
   process.env.NODE_ENV || "development",
   process.cwd(),
@@ -10,23 +12,25 @@ const { PORT } = loadEnv(
 
 export default defineConfig({
   output: "static",
+
   server: {
     port: PORT ? parseInt(PORT) : 5173, // Default port for vite.
   },
+
   redirects: {
     "/posts": "/posts/1", // Sent to 1st pagination page.
   },
+
   vite: {
     plugins: [tailwindcss()],
   },
+
   markdown: {
     shikiConfig: {
-      themes: {
-        light: "github-light",
-        dark: "github-dark",
-      },
+      syntaxHighlight: "prism",
     },
   },
+
   fonts: [
     // Font: Atkinson
     {
@@ -200,5 +204,14 @@ export default defineConfig({
         ],
       },
     },
+  ],
+
+  integrations: [
+    starlight({
+      title: "My Docs",
+      // Disable Starlight's 404 route so it doesn't conflict with your main site's 404.astro [1.2.2]
+      disable404Route: true,
+      // Tell the sidebar to automatically generate links specifically from your nested /docs/ directory
+    }),
   ],
 });
